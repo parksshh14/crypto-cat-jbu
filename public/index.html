@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>행사 QR 티켓</title><link rel="stylesheet" href="styles.css"></head>
+<body><main class="wrap">
+<h1>행사 QR 티켓</h1><section class="panel">
+<h2>관람객 로그인 / 회원가입</h2>
+<label>이메일<input id="email" type="email" autocomplete="email" placeholder="이메일"></label>
+<label>비밀번호<input id="password" type="password" autocomplete="current-password" placeholder="비밀번호 (6자 이상)"></label>
+<div class="actions"><button id="signup">회원가입</button><button id="login" class="secondary">로그인</button><button id="logout" class="secondary" hidden>로그아웃</button></div>
+<p id="account" class="muted">로그인하지 않았습니다.</p>
+</section>
+<section class="panel"><h2>내 티켓</h2><button id="issue">1분 유효 티켓 발급</button><div id="ticket" class="ticket"></div></section>
+<section class="panel"><h2>발급 내역</h2><button id="refresh" class="secondary">새로고침</button><div id="history"></div></section>
+<p id="message" role="status" class="message"></p>
+</main>
+<script type="module" src="ticket.js"></script></body></html>
