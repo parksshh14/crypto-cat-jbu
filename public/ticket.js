@@ -3,7 +3,7 @@ import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase-config.js";
 const $=id=>document.getElementById(id), db=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let user=null, countdown=null;
-function usernameToEmail(v){const u=v.trim().toLowerCase();if(!/^[a-z0-9_-]{3,24}$/.test(u))throw Error("아이디는 영문 소문자·숫자·_ -를 사용해 3~24자로 입력해 주세요.");return `${u}@users.qr-ticket.invalid`;}
+function usernameToEmail(v){const u=v.trim().toLowerCase();if(!/^[a-z0-9_-]{3,24}$/.test(u))throw Error("아이디는 영문 소문자·숫자·_ -를 사용해 3~24자로 입력해 주세요.");return `${u}@users.crypto-cat-jbu.com`;}
 function creds(){return {email:usernameToEmail($("username").value),password:$("password").value};}
 function message(t,type=""){const e=$("message");e.textContent=t;e.className="message "+type;}
 function ticketMessage(t){$("ticket-status").textContent=t;}

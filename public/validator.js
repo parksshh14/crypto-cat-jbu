@@ -1,7 +1,7 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase-config.js";
 const $=id=>document.getElementById(id),db=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);let user=null,scanner=null,busy=false;
-function usernameToEmail(v){const u=v.trim().toLowerCase();if(!/^[a-z0-9_-]{3,24}$/.test(u))throw Error("아이디는 영문 소문자·숫자·_ -를 사용해 3~24자로 입력해 주세요.");return `${u}@users.qr-ticket.invalid`;}
+function usernameToEmail(v){const u=v.trim().toLowerCase();if(!/^[a-z0-9_-]{3,24}$/.test(u))throw Error("아이디는 영문 소문자·숫자·_ -를 사용해 3~24자로 입력해 주세요.");return `${u}@users.crypto-cat-jbu.com`;}
 function show(t,type=""){const e=$("result");e.textContent=t;e.className="scan-result "+type;}
 function msg(t,type=""){const e=$("message");e.textContent=t;e.className="message "+type;}
 async function refresh(){const {data:{user:u}}=await db.auth.getUser();user=u;$("account").textContent=u?`로그인됨 · ${u.email?.split("@")[0]||""}`:"로그인하지 않았습니다.";$("logout").hidden=!u;}
