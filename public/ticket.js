@@ -1,40 +1,16 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase-config.js";
-const $ = id => document.getElementById(id);
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-let currentUser = null, countdownTimer = null;
-function msg(t, bad=false){$("message").textContent=t;$("message").className="message "+(bad?"bad":"");}
-function credentials(){return {email:$("email").value.trim(),password:$("password").value};}
-async function refreshUser(){
- const {data:{user}}=await db.auth.getUser(); currentUser=user;
- $("account").textContent=user?`로그인됨: ${user.email}`:"로그인하지 않았습니다.";
- $("logout").hidden=!user; $("issue").disabled=!user; $("refresh").disabled=!user;
- if(user) await history();
-}
-$("signup").onclick=async()=>{const c=credentials();const {error}=await db.auth.signUp(c);if(error)return msg(error.message,true);msg("회원가입 요청이 완료됐습니다. 이메일 확인이 필요하면 메일 인증 후 로그인해 주세요.");};
-$("login").onclick=async()=>{const {error}=await db.auth.signInWithPassword(credentials());if(error)return msg(error.message,true);msg("로그인했습니다.");await refreshUser();};
-$("logout").onclick=async()=>{await db.auth.signOut();$("ticket").replaceChildren();$("history").replaceChildren();msg("로그아웃했습니다.");await refreshUser();};
-$("issue").onclick=async()=>{
- if(!currentUser)return msg("먼저 로그인해 주세요.",true);
- const {data,error}=await db.rpc("issue_ticket");
- if(error)return msg(error.message,true);
- const t=data[0]; $("ticket").replaceChildren();
- const canvas=document.createElement("div");$("ticket").append(canvas);
-  const qrCanvas=document.createElement("canvas"); await QRCode.toCanvas(qrCanvas,t.token,{width:240,margin:2});$("ticket").replaceChildren(qrCanvas);
- const expiry=document.createElement("p");$("ticket").append(expiry);
- const expiresAt=new Date(t.expires_at).getTime();
- clearInterval(countdownTimer);
- const tick=()=>{const left=Math.max(0,Math.ceil((expiresAt-Date.now())/1000));expiry.textContent=left>0?`남은 유효시간: ${left}초`:"티켓이 만료됐습니다.";if(left===0)clearInterval(countdownTimer);};
- tick();countdownTimer=setInterval(tick,1000);msg("티켓을 발급했습니다.");
- await history();
-};
-async function history(){
- const {data,error}=await db.from("tickets").select("id,issued_at,expires_at,used_at").order("issued_at",{ascending:false}).limit(20);
- if(error)return msg(error.message,true);
- const host=$("history");host.replaceChildren();
- for(const t of data||[]){const d=document.createElement("div");d.className="history-item";d.textContent=`발급: ${new Date(t.issued_at).toLocaleString()} · ${t.used_at?"사용 완료":(new Date(t.expires_at)<new Date()?"만료":"미사용")}`;host.append(d);}
-}
-$("refresh").onclick=history;
-db.auth.onAuthStateChange(()=>{setTimeout(refreshUser,0);});
-refreshUser();
+const $=id=>document.getElementById(id), db=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let user=null, countdown=null;
+function usernameToEmail(v){const u=v.trim().toLowerCase();if(!/^[a-z0-9_-]{3,24}$/.test(u))throw Error("아이디는 영문 소문자·숫자·_ -를 사용해 3~24자로 입력해 주세요.");return `${u}@users.qr-ticket.invalid`;}
+function creds(){return {email:usernameToEmail($("username").value),password:$("password").value};}
+function message(t,type=""){const e=$("message");e.textContent=t;e.className="message "+type;}
+function ticketMessage(t){$("ticket-status").textContent=t;}
+async function history(){const {data,error}=await db.from("tickets").select("id,issued_at,expires_at,used_at").order("issued_at",{ascending:false}).limit(10);if(error){message(error.message,"bad");return;}const host=$("history");host.replaceChildren();if(!data?.length){host.innerHTML='<p class="subtle">아직 발급 내역이 없습니다.</p>';return;}for(const t of data){const el=document.createElement("div");el.className="history-item";el.textContent=`${new Date(t.issued_at).toLocaleString()} · ${t.used_at?"사용 완료":new Date(t.expires_at)<new Date()?"만료":"미사용"}`;host.append(el);}}
+async function refresh(){const {data:{user:u}}=await db.auth.getUser();user=u;const name=u?.email?.split("@")[0]||"";$("account").textContent=u?`로그인됨 · ${name}`:"로그인하지 않았습니다."; $("logout").hidden=!u;$("issue").disabled=!u;$("refresh").disabled=!u;if(u)await history();else $("history").innerHTML='<p class="subtle">로그인하면 발급 내역을 확인할 수 있습니다.</p>';}
+$("signup").onclick=async()=>{try{const c=creds();if(c.password.length<6)return message("비밀번호는 6자 이상 입력해 주세요.","bad");const {data,error}=await db.auth.signUp(c);if(error)return message(error.message,"bad");if(data.session){message("회원가입 및 로그인 완료","good");await refresh();}else message("가입은 접수됐지만 세션이 생성되지 않았습니다. Supabase의 Email > Confirm email 설정을 확인해 주세요.","bad");}catch(e){message(e.message,"bad");}};
+$("login").onclick=async()=>{try{const c=creds();const {error}=await db.auth.signInWithPassword(c);if(error)return message(error.message,"bad");message("로그인했습니다.","good");await refresh();}catch(e){message(e.message,"bad");}};
+$("logout").onclick=async()=>{await db.auth.signOut();clearInterval(countdown);$("ticket").innerHTML='<div class="qr-placeholder">로그인 후<br>티켓을 발급해 주세요</div>';ticketMessage("발급된 티켓이 없습니다.");message("로그아웃했습니다.");await refresh();};
+$("issue").onclick=async()=>{if(!user)return message("먼저 로그인해 주세요.","bad");const {data,error}=await db.rpc("issue_ticket");if(error)return message(error.message,"bad");const t=Array.isArray(data)?data[0]:data;if(!t?.token||!t?.expires_at)return message("티켓 응답 형식이 예상과 다릅니다. Supabase issue_ticket 함수의 반환값을 확인해 주세요.","bad");const canvas=document.createElement("canvas");try{await QRCode.toCanvas(canvas,t.token,{width:260,margin:1,errorCorrectionLevel:"M"});}catch(e){return message("QR 생성 실패: "+e.message,"bad");}$("ticket").replaceChildren(canvas);const exp=new Date(t.expires_at).getTime();clearInterval(countdown);const tick=()=>{const n=Math.max(0,Math.ceil((exp-Date.now())/1000));ticketMessage(n?`유효시간 ${n}초 · 입장 직전에 스캔해 주세요`:"티켓 만료 · 새 티켓을 발급해 주세요");if(!n)clearInterval(countdown);};tick();countdown=setInterval(tick,1000);message("모바일 티켓을 발급했습니다.","good");await history();};
+$("refresh").onclick=history;db.auth.onAuthStateChange(()=>setTimeout(refresh,0));refresh();

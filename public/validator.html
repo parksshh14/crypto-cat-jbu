@@ -1,14 +1,7 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>입장 확인</title><link rel="stylesheet" href="styles.css"></head>
-<body><main class="wrap">
-<h1>입장 확인 시스템</h1><section class="panel">
-<h2>검표원 로그인</h2>
-<label>이메일<input id="email" type="email" autocomplete="username"></label>
-<label>비밀번호<input id="password" type="password" autocomplete="current-password"></label>
-<div class="actions"><button id="login">로그인</button><button id="logout" class="secondary" hidden>로그아웃</button></div>
-<p id="account" class="muted">로그인하지 않았습니다.</p>
-</section>
-<section class="panel"><h2>QR 코드 스캔</h2><button id="start">카메라 시작</button><button id="stop" class="secondary">카메라 중지</button><div id="reader"></div><div id="result" class="message"></div></section>
-</main>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101827"><title>모바일 검표</title><link rel="stylesheet" href="styles.css"></head>
+<body><header class="topbar"><div class="brand-mark">Q</div><div><strong>QR TICKET</strong><small>검표원 전용</small></div></header><main class="mobile-shell">
+<section class="hero"><p class="eyebrow">EVENT CHECK-IN</p><h1>입장 확인</h1><p>검표원 계정으로 로그인한 뒤 참가자의 QR을 스캔하세요.</p></section>
+<section class="card"><h2>검표원 로그인</h2><label for="username">아이디</label><input id="username" autocomplete="username" autocapitalize="none" maxlength="24" placeholder="검표원 아이디"><label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" placeholder="비밀번호"><div class="button-row"><button id="login" class="button primary">로그인</button><button id="logout" class="button secondary" hidden>로그아웃</button></div><p id="account" class="subtle">로그인하지 않았습니다.</p></section>
+<section class="ticket-card"><p class="eyebrow">CAMERA SCANNER</p><h2>QR 코드 스캔</h2><p class="subtle">카메라 권한을 허용하고 QR 코드를 사각형 안에 맞춰 주세요.</p><div class="button-row"><button id="start" class="button primary">카메라 시작</button><button id="stop" class="button secondary">중지</button></div><div id="reader" class="reader"></div><div id="result" class="scan-result" aria-live="polite">로그인 후 카메라를 시작해 주세요.</div></section><p id="message" class="message" role="status"></p><footer>QR TICKET · CHECK-IN</footer></main>
 <script src="https://unpkg.com/html5-qrcode"></script><script type="module" src="validator.js"></script></body></html>
